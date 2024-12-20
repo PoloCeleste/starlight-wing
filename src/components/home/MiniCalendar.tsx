@@ -36,7 +36,7 @@ const MiniCalendar: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-      <h3 className="text-xl font-bold text-gray-800 mb-4">Today's Event</h3>
+      <h3 className="text-xl font-bold text-gray-800 mb-4">오늘의 한마당</h3>
 
       {/* 날짜 표시 */}
       <p className="text-gray-600 mb-4">
@@ -49,20 +49,20 @@ const MiniCalendar: React.FC = () => {
 
       {/* 월령 정보 */}
       <div className="mb-4 p-3 bg-gray-50 rounded-md">
-        <h4 className="font-semibold text-gray-700 mb-2">Moon Phase</h4>
+        <h4 className="font-semibold text-gray-700 mb-2">달나들이</h4>
         {moonPhase ? (
           <div className="text-sm text-gray-600">
-            <p>Phase: {moonPhase.phase}</p>
-            <p>Illumination: {moonPhase.illumination}%</p>
+            <p>단계: {moonPhase.phase}</p>
+            <p>빛비춤: {moonPhase.illumination}%</p>
           </div>
         ) : (
-          <p className="text-sm text-gray-500">Loading moon data...</p>
+          <p className="text-sm text-gray-500">달빛 살피는 중입니다...</p>
         )}
       </div>
 
       {/* 천체 이벤트 */}
       <div className="mb-4 p-3 bg-gray-50 rounded-md">
-        <h4 className="font-semibold text-gray-700 mb-2">Celestial Events</h4>
+        <h4 className="font-semibold text-gray-700 mb-2">별하늘 구경거리</h4>
         {celestialEvents.length > 0 ? (
           <ul className="text-sm text-gray-600 space-y-2">
             {celestialEvents.map((event, index) => (
@@ -70,13 +70,15 @@ const MiniCalendar: React.FC = () => {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-gray-500">No events today</p>
+          <p className="text-sm text-gray-500">
+            오늘은 별빛 잔치가 없습니다...
+          </p>
         )}
       </div>
 
       {/* 오늘의 일기 */}
       <div className="mb-4">
-        <h4 className="font-semibold text-gray-700 mb-2">Today's Diary</h4>
+        <h4 className="font-semibold text-gray-700 mb-2">오늘의 하루글</h4>
         {todayEntries.length > 0 ? (
           <div className="max-h-32 overflow-y-auto space-y-2">
             {todayEntries.map((entry) => (
@@ -89,7 +91,7 @@ const MiniCalendar: React.FC = () => {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">No entries today</p>
+          <p className="text-sm text-gray-500">오늘은 하루글이 없네요...</p>
         )}
       </div>
 
@@ -97,7 +99,7 @@ const MiniCalendar: React.FC = () => {
         to="/calendar"
         className="block text-center py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200"
       >
-        View Full Calendar
+        온 달가름 보기
       </Link>
     </div>
   );

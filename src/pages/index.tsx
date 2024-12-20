@@ -7,7 +7,7 @@ import RecentPosts from "../components/home/RecentPosts";
 
 const IndexPage: React.FC = () => {
   return (
-    <Layout title="Home">
+    <Layout title="첫자리">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
         <UserInfo />
         <WeatherWidget />
