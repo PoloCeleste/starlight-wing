@@ -20,22 +20,27 @@ const Navbar: React.FC = () => {
           <div className="hidden lg:flex items-center justify-between flex-1 ml-8">
             <div className="flex gap-4 xl:gap-6">
               <Link to="/" className="text-white hover:text-gray-300">
-                Home
+                첫자리
+                {/* Home ; 첫, 처음 */}
               </Link>
               <Link to="/board" className="text-white hover:text-gray-300">
-                Board
+                별무리 모꼬지
+                {/* Board ; 별자리 + 여러 사람이 모이는 공간 */}
               </Link>
               <Link to="/calendar" className="text-white hover:text-gray-300">
-                Calendar
+                달가름
+                {/* Calendar ; 달 + 가르다,구분하다 : 달력 */}
               </Link>
               <Link
                 to="/constellation"
                 className="text-white hover:text-gray-300"
               >
-                Constellation
+                별무리 맺음
+                {/* Constellation */}
               </Link>
               <Link to="/mypage" className="text-white hover:text-gray-300">
-                MyPage
+                혜윰터
+                {/* MyPage ; 생각하는 공간 == 개인의 사색과 휴식을 위한공간 */}
               </Link>
             </div>
             <AuthButtons />
@@ -79,22 +84,22 @@ const Navbar: React.FC = () => {
         >
           <div className="flex flex-col gap-4">
             <Link to="/" className="text-white hover:text-gray-300">
-              Home
+              첫자리
             </Link>
             <Link to="/board" className="text-white hover:text-gray-300">
-              Board
+              별무리 모꼬지
             </Link>
             <Link to="/calendar" className="text-white hover:text-gray-300">
-              Calendar
+              달가름
             </Link>
             <Link
               to="/constellation"
               className="text-white hover:text-gray-300"
             >
-              Constellation
+              별무리 맺음
             </Link>
             <Link to="/mypage" className="text-white hover:text-gray-300">
-              MyPage
+              혜윰터
             </Link>
           </div>
         </div>

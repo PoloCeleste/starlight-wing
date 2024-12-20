@@ -1,8 +1,13 @@
 interface User {
-  id: string;
-  username: string;
-  email: string;
+  id: string | null;
+  username: string | null;
+  email: string | null;
   isLoggedIn: boolean;
+}
+
+interface UserProfile extends Pick<User, "username" | "email"> {
+  joinDate: string;
+  posts: number;
 }
 
 interface Post {
@@ -10,7 +15,10 @@ interface Post {
   title: string;
   content: string;
   author: string;
+  image?: string;
+  imageFile?: File;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface WeatherData {
@@ -33,4 +41,15 @@ interface DiaryModalProps {
   onSave: (content: string) => void;
   onUpdate: (id: number, content: string) => void;
   onDelete: (id: number) => void;
+}
+
+interface GeoLocation {
+  latitude: number;
+  longitude: number;
+}
+
+interface LocationContextType {
+  location: GeoLocation | null;
+  isLoading: boolean;
+  error: string;
 }

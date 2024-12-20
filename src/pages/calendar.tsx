@@ -88,7 +88,7 @@ const CalendarPage: React.FC = () => {
   }, []);
 
   return (
-    <Layout title="Calendar">
+    <Layout title="달가름">
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-lg p-6 min-w-[320px]">
           {/* 상단 영역 */}
@@ -112,7 +112,7 @@ const CalendarPage: React.FC = () => {
                 onClick={() => setCurrentDate(new Date())}
                 className="px-3 py-1 text-sm bg-blue-500 text-white rounded-full hover:bg-blue-600"
               >
-                Today
+                오늘
               </button>
             </div>
             <button
@@ -125,7 +125,7 @@ const CalendarPage: React.FC = () => {
 
           {/* 요일 영역 */}
           <div className="grid grid-cols-7 gap-2 mb-2">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            {["일", "월", "화", "수", "목", "금", "토"].map((day) => (
               <div
                 key={day}
                 className="text-center font-semibold text-gray-600 text-sm md:text-base"
