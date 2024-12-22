@@ -23,11 +23,31 @@ const MiniCalendar: React.FC = () => {
     const entries = localStorage.getItem("diaryEntries");
     if (entries) {
       const parsedEntries: DiaryEntry[] = JSON.parse(entries);
-      const today = new Date().toISOString().split("T")[0];
-      const todaysDiaries = parsedEntries.filter(
-        (entry) =>
-          new Date(entry.selectedDate).toISOString().split("T")[0] === today
-      );
+      const today = new Date()
+        .toLocaleDateString("ko-KR", {
+          timeZone: "Asia/Seoul",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .split(". ")
+        .join("-")
+        .replace(".", "");
+
+      const todaysDiaries = parsedEntries.filter((entry) => {
+        const entryDate = new Date(entry.selectedDate)
+          .toLocaleDateString("ko-KR", {
+            timeZone: "Asia/Seoul",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
+          .split(". ")
+          .join("-")
+          .replace(".", "");
+
+        return entryDate === today;
+      });
       setTodayEntries(todaysDiaries);
     }
 

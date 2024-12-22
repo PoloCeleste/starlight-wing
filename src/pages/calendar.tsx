@@ -271,15 +271,9 @@ const CalendarPage: React.FC = () => {
             onClose={() => setIsModalOpen(false)}
             onSave={(content) => {
               const now = new Date();
-              const koreanDate = new Date(selectedDate);
-              koreanDate.setHours(
-                now.getHours(),
-                now.getMinutes(),
-                now.getSeconds()
-              );
               const newEntry = {
                 id: Date.now(),
-                selectedDate: koreanDate.toISOString(),
+                selectedDate: selectedDate.toISOString(),
                 createdAt: now.toISOString(),
                 content,
               };
