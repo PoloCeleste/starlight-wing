@@ -4,10 +4,10 @@ import UserInfo from "../components/home/UserInfo";
 import WeatherWidget from "../components/home/WeatherWidget";
 import MiniCalendar from "../components/home/MiniCalendar";
 import RecentPosts from "../components/home/RecentPosts";
-import AuthService from "../services/AuthService";
+import { api, authStore } from "../api/apiClient";
 
 const IndexPage: React.FC = () => {
-  const isLoggedIn = !!AuthService.getInstance().getAccessToken(); // 로그인 상태 확인
+  const isLoggedIn = !!authStore.getAccessToken(); // 로그인 상태 확인
 
   return (
       <Layout title="첫자리">

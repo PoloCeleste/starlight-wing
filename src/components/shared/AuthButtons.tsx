@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Link, navigate } from "gatsby";
-import AuthService from "../../services/AuthService";
+import { api, authStore } from "../../api/apiClient";
 
 interface AuthState {
   isLoggedIn: boolean;
@@ -15,7 +15,7 @@ const AuthButtons: React.FC = () => {
 
   // 컴포넌트 마운트 시 로그인 상태 확인
   useEffect(() => {
-    const token = AuthService.getInstance().getAccessToken();
+    const token = authStore.getAccessToken();
     if (token) {
       setAuthState({
         isLoggedIn: true,
@@ -25,7 +25,7 @@ const AuthButtons: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    AuthService.getInstance().clearAccessToken(); // Access Token 제거
+    authStore.clearAuth(); // Access Token 제거
     setAuthState({ isLoggedIn: false });
     navigate("/"); // 메인 페이지로 리다이렉트
     console.log("로그아웃 완료");

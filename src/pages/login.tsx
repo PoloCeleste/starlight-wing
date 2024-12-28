@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Layout from "../components/layout/Layout";
 import {navigate} from "gatsby";
-import AuthService from "../services/AuthService";
+// import AuthService from "../services/AuthService";
+import { api, authStore } from "../api/apiClient";
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -25,7 +26,7 @@ const LoginPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        AuthService.getInstance().setAccessToken(data.token); // 메모리에 저장
+        authStore.setAccessToken(data.token); // 올바른 메서드 호출 방식
         console.log("로그인 성공:", data);
 
         // // 토큰 저장
