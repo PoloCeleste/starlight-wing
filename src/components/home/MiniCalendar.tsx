@@ -4,6 +4,7 @@ import { Link } from "gatsby";
 interface MoonPhase {
   phase: string;
   illumination: number;
+  imageUrl: string;
 }
 
 interface CelestialEvent {
@@ -51,7 +52,58 @@ const MiniCalendar: React.FC = () => {
       setTodayEntries(todaysDiaries);
     }
 
-    // 월령 정보와 천체 이벤트는 API 호출로 구현 예정
+    // 월령 정보 가져오기
+    const fetchMoonPhase = async () => {
+      try {
+        const today = new Date();
+        const koreanDate = new Date(
+          today.toLocaleString("en-US", { timeZone: "Asia/Seoul" })
+        );
+
+        const year = koreanDate.getFullYear();
+        const month = String(koreanDate.getMonth() + 1).padStart(2, "0");
+        const day = String(koreanDate.getDate()).padStart(2, "0");
+
+        const MOON_API_KEY = process.env.GATSBY_MOON_API_KEY;
+
+        const response = await fetch(
+          `https://apis.data.go.kr/B090041/openapi/service/LunPhInfoService/getLunPhInfo?serviceKey=${MOON_API_KEY}&solYear=${year}&solMonth=${month}&solDay=${day}`
+        );
+
+        const xmlText = await response.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+        const lunAge = parseFloat(
+          xmlDoc.querySelector("lunAge")?.textContent || "200"
+        );
+
+        if (lunAge != 200) {
+          // 계산
+          const phase = String(Math.floor(lunAge) + 1).padStart(2, "0");
+          const calculateIllumination = (lunAge: number): number => {
+            if (lunAge <= 15) {
+              return Math.round((lunAge / 15) * 100);
+            } else {
+              return Math.round(((30 - lunAge) / 15) * 100);
+            }
+          };
+          const illumination = calculateIllumination(lunAge);
+
+          setMoonPhase({
+            phase,
+            illumination,
+            imageUrl: `https://astro.kasi.re.kr/resources/images/content/new_calendar_moon${phase}.png`,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch moon phase:", error);
+      }
+    };
+
+    fetchMoonPhase();
+
+    // 천체 이벤트는 API 호출로 구현 예정
   }, []);
 
   return (
@@ -72,7 +124,12 @@ const MiniCalendar: React.FC = () => {
         <h4 className="font-semibold text-gray-700 mb-2">달나들이</h4>
         {moonPhase ? (
           <div className="text-sm text-gray-600">
-            <p>단계: {moonPhase.phase}</p>
+            <img
+              src={moonPhase.imageUrl}
+              alt={`Moon phase ${moonPhase.phase}`}
+              className="w-8 h-8 mx-auto mb-2"
+            />
+            <p>단계: {moonPhase.phase}/30</p>
             <p>빛비춤: {moonPhase.illumination}%</p>
           </div>
         ) : (
