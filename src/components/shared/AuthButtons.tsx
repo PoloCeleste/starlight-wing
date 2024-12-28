@@ -1,5 +1,6 @@
-import React from "react";
-import { Link } from "gatsby";
+import React, { useEffect } from "react";
+import { Link, navigate } from "gatsby";
+import AuthService from "../../services/AuthService";
 
 interface AuthState {
   isLoggedIn: boolean;
@@ -9,47 +10,58 @@ interface AuthState {
 const AuthButtons: React.FC = () => {
   const [authState, setAuthState] = React.useState<AuthState>({
     isLoggedIn: false,
+    username: "",
   });
 
+  // 컴포넌트 마운트 시 로그인 상태 확인
+  useEffect(() => {
+    const token = AuthService.getInstance().getAccessToken();
+    if (token) {
+      setAuthState({
+        isLoggedIn: true,
+        username: "사용자 이름", // 실제 API 호출로 대체 가능
+      });
+    }
+  }, []);
+
   const handleLogout = () => {
+    AuthService.getInstance().clearAccessToken(); // Access Token 제거
     setAuthState({ isLoggedIn: false });
-    // 로그아웃 처리
+    navigate("/"); // 메인 페이지로 리다이렉트
+    console.log("로그아웃 완료");
   };
 
   return (
-    <div className="flex items-center space-x-2 sm:space-x-4">
-      {authState.isLoggedIn ? (
-        <>
+      <div className="flex items-center space-x-2 sm:space-x-4">
+        {authState.isLoggedIn ? (
+            <>
           <span className="text-white hidden sm:inline">
             반갑습니다, {authState.username}님!
           </span>
-          <button
-            onClick={handleLogout}
-            className="px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-          >
-            그만하기
-            {/* Logout */}
-          </button>
-        </>
-      ) : (
-        <>
-          <Link
-            to="/login"
-            className="px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-          >
-            어울리기
-            {/* Login */}
-          </Link>
-          <Link
-            to="/register"
-            className="px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-          >
-            이름올리기
-            {/* Register */}
-          </Link>
-        </>
-      )}
-    </div>
+              <button
+                  onClick={handleLogout}
+                  className="px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              >
+                로그아웃
+              </button>
+            </>
+        ) : (
+            <>
+              <Link
+                  to="/login"
+                  className="px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                로그인
+              </Link>
+              <Link
+                  to="/register"
+                  className="px-2 py-1 sm:px-4 sm:py-2 text-sm sm:text-base bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              >
+                회원가입
+              </Link>
+            </>
+        )}
+      </div>
   );
 };
 
