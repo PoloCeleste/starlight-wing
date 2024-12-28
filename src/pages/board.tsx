@@ -6,14 +6,6 @@ import { Link } from "gatsby";
 import AuthService from "../services/AuthService";
 import { api } from "../api/apiClient";
 
-interface Post {
-  id: number;
-  title: string;
-  content: string;
-  author: string;
-  createdAt: string;
-}
-
 const BoardPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -39,29 +31,27 @@ const BoardPage: React.FC = () => {
   }, []);
 
   return (
-      <Layout title="별무리 모꼬지">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-              별무리 모꼬지
-            </h1>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
-              <div className="flex-grow sm:flex-grow-0">
-                <SearchBar />
-              </div>
-              {isLoggedIn && (
-                  <Link
-                      to="/create-post"
-                      className="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors duration-200 text-center"
-                  >
-                    글올림
-                  </Link>
-              )}
+    <Layout title="별무리 모꼬지">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            별무리 모꼬지
+          </h1>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+            <div className="flex-grow sm:flex-grow-0">
+              <SearchBar />
             </div>
+            <Link
+              to={isLoggedIn ? "/create-post" : "/login"}
+              className="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors duration-200 text-center"
+            >
+              글올림
+            </Link>
           </div>
-          <PostList posts={posts} showContent={isLoggedIn} />
         </div>
-      </Layout>
+        <PostList posts={posts} />
+      </div>
+    </Layout>
   );
 };
 
