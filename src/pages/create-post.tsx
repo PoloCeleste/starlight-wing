@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../components/layout/Layout";
 import { navigate } from "gatsby";
+import AuthService from "../services/AuthService";
 
 const CreatePostPage: React.FC = () => {
   const [postData, setPostData] = useState({
@@ -42,6 +43,11 @@ const CreatePostPage: React.FC = () => {
     // API POST 호출
     navigate("/board");
   };
+
+  // 로그인 되어 있지 않으면 로그인페이지로 보내기
+  useEffect(() => {
+    AuthService.getInstance().getAccessToken() ? "" : navigate("/login");
+  }, []);
 
   return (
     <Layout title="글올림">

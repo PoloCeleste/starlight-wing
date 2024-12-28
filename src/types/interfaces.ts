@@ -1,5 +1,5 @@
 interface User {
-  id: string | null;
+  id: number | null;
   username: string | null;
   email: string | null;
   isLoggedIn: boolean;
@@ -11,7 +11,7 @@ interface UserProfile extends Pick<User, "username" | "email"> {
 }
 
 interface Post {
-  id: string;
+  id: number;
   title: string;
   content: string;
   author: string;

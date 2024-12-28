@@ -1,11 +1,34 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../components/layout/Layout";
 import PostList from "../components/board/PostList";
 import SearchBar from "../components/board/SearchBar";
 import { Link } from "gatsby";
+import AuthService from "../services/AuthService";
+import { api } from "../api/apiClient";
 
 const BoardPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // 로그인 상태 확인 및 게시글 목록 가져오기
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = AuthService.getInstance().getAccessToken();
+      setIsLoggedIn(!!token); // 로그인 여부 확인
+    };
+
+    const fetchPosts = async () => {
+      try {
+        const response = await api.get("/posts"); // 백엔드에서 게시글 목록 가져오기
+        setPosts(response.data);
+      } catch (error) {
+        console.error("게시글 목록 불러오기 실패:", error);
+      }
+    };
+
+    checkLoginStatus();
+    fetchPosts();
+  }, []);
 
   return (
     <Layout title="별무리 모꼬지">
@@ -19,7 +42,7 @@ const BoardPage: React.FC = () => {
               <SearchBar />
             </div>
             <Link
-              to="/create-post"
+              to={isLoggedIn ? "/create-post" : "/login"}
               className="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors duration-200 text-center"
             >
               글올림
