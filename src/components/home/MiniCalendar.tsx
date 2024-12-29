@@ -64,10 +64,10 @@ const MiniCalendar: React.FC = () => {
         const month = String(koreanDate.getMonth() + 1).padStart(2, "0");
         const day = String(koreanDate.getDate()).padStart(2, "0");
 
-        const MOON_API_KEY = process.env.GATSBY_MOON_API_KEY;
+        const SKY_API_KEY = process.env.GATSBY_SKY_API_KEY;
 
         const response = await fetch(
-          `https://apis.data.go.kr/B090041/openapi/service/LunPhInfoService/getLunPhInfo?serviceKey=${MOON_API_KEY}&solYear=${year}&solMonth=${month}&solDay=${day}`
+          `https://apis.data.go.kr/B090041/openapi/service/LunPhInfoService/getLunPhInfo?serviceKey=${SKY_API_KEY}&solYear=${year}&solMonth=${month}&solDay=${day}`
         );
 
         const xmlText = await response.text();
