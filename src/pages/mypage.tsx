@@ -45,7 +45,7 @@ const MyPage: React.FC = () => {
   return (
     <Layout title="혜윰터">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-4xl">
-        {userProfile ? (
+        {!userProfile ? (
           <>
             <div className="bg-white shadow-md rounded-lg p-6 mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
