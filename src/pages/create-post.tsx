@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/layout/Layout";
 import { navigate } from "gatsby";
-import AuthService from "../services/AuthService";
+import { api } from "../api/apiClient"; // api 참조
+import useAuthRefresh from "../hooks/useAuth"; // Custom Hook 사용
 
 const CreatePostPage: React.FC = () => {
+  const { isLoggedIn, isLoading } = useAuthRefresh(); // Hook 사용
+
   const [postData, setPostData] = useState({
     title: "",
     content: "",
@@ -30,6 +33,7 @@ const CreatePostPage: React.FC = () => {
         e.target.value = "";
         return;
       }
+
       setPostData({
         ...postData,
         image: file,
@@ -38,131 +42,165 @@ const CreatePostPage: React.FC = () => {
     }
   };
 
+  // 게시글 작성 요청
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // API POST 호출
-    navigate("/board");
+
+    const formData = new FormData();
+    formData.append("title", postData.title);
+    formData.append("content", postData.content);
+    if (postData.image) {
+      formData.append("image", postData.image);
+    }
+
+    try {
+      const response = await api.post("/board", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.status === 200) {
+        alert("게시글이 성공적으로 작성되었습니다.");
+        navigate("/board");
+      }
+    } catch (error: any) {
+      console.error("게시글 작성 중 에러:", error);
+
+      if (error.response?.status === 401) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        navigate("/login");
+      } else if (error.response?.status === 400) {
+        alert(`입력값을 확인해주세요: ${error.response.data.message}`);
+      } else {
+        alert("게시글 작성 중 문제가 발생했습니다.");
+      }
+    }
   };
 
-  // 로그인 되어 있지 않으면 로그인페이지로 보내기
+  // 이미지 URL 메모리 해제
   useEffect(() => {
-    AuthService.getInstance().getAccessToken() ? "" : navigate("/login");
-  }, []);
+    return () => {
+      if (postData.imagePreview) {
+        URL.revokeObjectURL(postData.imagePreview);
+      }
+    };
+  }, [postData.imagePreview]);
 
   return (
-    <Layout title="글올림">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">글올림</h2>
+      <Layout title="글올림">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">글올림</h2>
 
-        {/* 게시글 폼 */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 제목 작성 */}
-          <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              글머리
-            </label>
-            <input
-              type="text"
-              id="title"
-              value={postData.title}
-              onChange={(e) =>
-                setPostData({ ...postData, title: e.target.value })
-              }
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
+          {/* 게시글 폼 */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 제목 작성 */}
+            <div>
+              <label
+                  htmlFor="title"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                글머리
+              </label>
+              <input
+                  type="text"
+                  id="title"
+                  value={postData.title}
+                  onChange={(e) =>
+                      setPostData({ ...postData, title: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+              />
+            </div>
 
-          {/* 이미지 넣기 (선택) */}
-          <div>
-            <label
-              htmlFor="image"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              빛그림
-            </label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-              <div className="space-y-1 text-center">
-                {postData.imagePreview ? (
-                  <div className="mb-4">
-                    <img
-                      src={postData.imagePreview}
-                      alt="Preview"
-                      className="mx-auto h-48 w-auto object-cover rounded"
-                    />
+            {/* 이미지 넣기 (선택) */}
+            <div>
+              <label
+                  htmlFor="image"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                빛그림
+              </label>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div className="space-y-1 text-center">
+                  {postData.imagePreview ? (
+                      <div className="mb-4">
+                        <img
+                            src={postData.imagePreview}
+                            alt="Preview"
+                            className="mx-auto h-48 w-auto object-cover rounded"
+                        />
+                      </div>
+                  ) : (
+                      <svg
+                          className="mx-auto h-12 w-12 text-gray-400"
+                          stroke="currentColor"
+                          fill="none"
+                          viewBox="0 0 48 48"
+                      >
+                        <path
+                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                            strokeWidth={2}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                      </svg>
+                  )}
+                  <div className="flex text-sm text-gray-600">
+                    <label
+                        htmlFor="file-upload"
+                        className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
+                    >
+                      <span>자료 올리기</span>
+                      <input
+                          type="file"
+                          id="file-upload"
+                          name="file-upload"
+                          accept="image/jpeg, image/png, image/gif"
+                          onChange={handleImageChange}
+                          className="sr-only"
+                      />
+                    </label>
                   </div>
-                ) : (
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
-                    stroke="currentColor"
-                    fill="none"
-                    viewBox="0 0 48 48"
-                  >
-                    <path
-                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
-                  >
-                    <span>자료 올리기</span>
-                    <input
-                      type="file"
-                      id="file-upload"
-                      name="file-upload"
-                      accept="image/jpeg, image/png, image/gif"
-                      onChange={handleImageChange}
-                      className="sr-only"
-                    />
-                  </label>
+                  <p className="text-xs text-gray-500">
+                    PNG, JPG, GIF up to 10MB
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500">
-                  PNG, JPG, GIF up to 10MB
-                </p>
               </div>
             </div>
-          </div>
 
-          {/* 본문 작성 */}
-          <div>
-            <label
-              htmlFor="content"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              글몸
-            </label>
-            <textarea
-              id="content"
-              value={postData.content}
-              onChange={(e) =>
-                setPostData({ ...postData, content: e.target.value })
-              }
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[200px]"
-              required
-            />
-          </div>
+            {/* 본문 작성 */}
+            <div>
+              <label
+                  htmlFor="content"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                글몸
+              </label>
+              <textarea
+                  id="content"
+                  value={postData.content}
+                  onChange={(e) =>
+                      setPostData({ ...postData, content: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[200px]"
+                  required
+              />
+            </div>
 
-          {/* 작성 버튼 */}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-            >
-              올리기
-            </button>
-          </div>
-        </form>
-      </div>
-    </Layout>
+            {/* 작성 버튼 */}
+            <div className="flex justify-end">
+              <button
+                  type="submit"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+              >
+                올리기
+              </button>
+            </div>
+          </form>
+        </div>
+      </Layout>
   );
 };
 
