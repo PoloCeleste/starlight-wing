@@ -55,7 +55,7 @@ api.interceptors.response.use(
         originalRequest._retry = true; // 무한 루프 방지
         try {
           // Refresh Token을 사용해 Access Token 갱신
-          const response = await api.post("/auth/refresh");
+          const response = await api.post("/v1/user/refresh");
           const newAccessToken = response.data.accessToken;
 
           // 갱신된 Access Token 저장

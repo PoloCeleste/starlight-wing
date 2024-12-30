@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/layout/Layout";
 import { navigate } from "gatsby";
-import { api, authStore } from "../api/apiClient"; // api와 authStore 참조
+import { api } from "../api/apiClient"; // api 참조
+import useAuthRefresh from "../hooks/useAuth"; // Custom Hook 사용
 
 const CreatePostPage: React.FC = () => {
+  const { isLoggedIn, isLoading } = useAuthRefresh(); // Hook 사용
+
   const [postData, setPostData] = useState({
     title: "",
     content: "",
@@ -60,33 +63,29 @@ const CreatePostPage: React.FC = () => {
       if (response.status === 200) {
         alert("게시글이 성공적으로 작성되었습니다.");
         navigate("/board");
-      } else {
-        alert(`게시글 작성 실패: ${response.data.message}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("게시글 작성 중 에러:", error);
-      alert("게시글 작성 중 문제가 발생했습니다.");
+
+      if (error.response?.status === 401) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        navigate("/login");
+      } else if (error.response?.status === 400) {
+        alert(`입력값을 확인해주세요: ${error.response.data.message}`);
+      } else {
+        alert("게시글 작성 중 문제가 발생했습니다.");
+      }
     }
   };
 
-  // 로그인 상태 확인 및 리프레시 토큰 처리
+  // 이미지 URL 메모리 해제
   useEffect(() => {
-    const checkAuth = async () => {
-      const accessToken = authStore.getAccessToken();
-      if (!accessToken) {
-        try {
-          const response = await api.post("/auth/refresh"); // 리프레시 토큰으로 액세스 토큰 갱신
-          const newAccessToken = response.data.accessToken;
-          authStore.setAccessToken(newAccessToken);
-        } catch (error) {
-          console.error("인증 실패:", error);
-          navigate("/login"); // 인증 실패 시 로그인 페이지로 이동
-        }
+    return () => {
+      if (postData.imagePreview) {
+        URL.revokeObjectURL(postData.imagePreview);
       }
     };
-
-    checkAuth();
-  }, []);
+  }, [postData.imagePreview]);
 
   return (
       <Layout title="글올림">

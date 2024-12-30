@@ -1,11 +1,14 @@
 import React, { useEffect } from "react";
 import { Link, navigate } from "gatsby";
 import { api, authStore } from "../../api/apiClient";
-
+import useLogout from "../../hooks/useLogout";
 interface AuthState {
   isLoggedIn: boolean;
   username?: string;
 }
+
+// 커스텀 훅에서 로그아웃 함수 가져오기
+const { handleLogout } = useLogout();
 
 const AuthButtons: React.FC = () => {
   const [authState, setAuthState] = React.useState<AuthState>({
@@ -24,12 +27,12 @@ const AuthButtons: React.FC = () => {
     }
   }, []);
 
-  const handleLogout = () => {
-    authStore.clearAuth(); // Access Token 제거
-    setAuthState({ isLoggedIn: false });
-    navigate("/"); // 메인 페이지로 리다이렉트
-    console.log("로그아웃 완료");
-  };
+  // const handleLogout = () => {
+  //   authStore.clearAuth(); // Access Token 제거
+  //   setAuthState({ isLoggedIn: false });
+  //   navigate("/"); // 메인 페이지로 리다이렉트
+  //   console.log("로그아웃 완료");
+  // };
 
   return (
       <div className="flex items-center space-x-2 sm:space-x-4">
