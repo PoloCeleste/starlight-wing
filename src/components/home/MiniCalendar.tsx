@@ -77,7 +77,7 @@ const MiniCalendar: React.FC = () => {
         const lunAge = parseFloat(
           xmlDoc.querySelector("lunAge")?.textContent || "200"
         );
-
+        ("images/500_moon01.png");
         if (lunAge != 200) {
           // 계산
           const phase = String(Math.floor(lunAge) + 1).padStart(2, "0");
@@ -93,7 +93,7 @@ const MiniCalendar: React.FC = () => {
           setMoonPhase({
             phase,
             illumination,
-            imageUrl: `https://astro.kasi.re.kr/resources/images/content/new_calendar_moon${phase}.png`,
+            imageUrl: `/images/500_moon${phase}.png`,
           });
         }
       } catch (error) {
