@@ -53,3 +53,16 @@ interface LocationContextType {
   isLoading: boolean;
   error: string;
 }
+
+interface MoonPhase {
+  phase: string;
+  illumination: number;
+  imageUrl: string;
+}
+
+interface CelestialEvent {
+  title: string;
+  date: string;
+  description: string;
+  seq?: number;
+}

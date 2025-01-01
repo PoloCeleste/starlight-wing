@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "gatsby";
 
-interface MoonPhase {
-  phase: string;
-  illumination: number;
-  imageUrl: string;
-}
-
-interface CelestialEvent {
-  title: string;
-  date: string;
-  description: string;
-}
-
 const MiniCalendar: React.FC = () => {
   const [currentDate] = useState(new Date());
   const [todayEntries, setTodayEntries] = useState<DiaryEntry[]>([]);
@@ -52,20 +40,20 @@ const MiniCalendar: React.FC = () => {
       setTodayEntries(todaysDiaries);
     }
 
+    const today = new Date();
+    const koreanDate = new Date(
+      today.toLocaleString("en-US", { timeZone: "Asia/Seoul" })
+    );
+
+    const year = koreanDate.getFullYear();
+    const month = String(koreanDate.getMonth() + 1).padStart(2, "0");
+    const day = String(koreanDate.getDate()).padStart(2, "0");
+
+    const SKY_API_KEY = process.env.GATSBY_SKY_API_KEY;
+
     // 월령 정보 가져오기
     const fetchMoonPhase = async () => {
       try {
-        const today = new Date();
-        const koreanDate = new Date(
-          today.toLocaleString("en-US", { timeZone: "Asia/Seoul" })
-        );
-
-        const year = koreanDate.getFullYear();
-        const month = String(koreanDate.getMonth() + 1).padStart(2, "0");
-        const day = String(koreanDate.getDate()).padStart(2, "0");
-
-        const SKY_API_KEY = process.env.GATSBY_SKY_API_KEY;
-
         const response = await fetch(
           `https://apis.data.go.kr/B090041/openapi/service/LunPhInfoService/getLunPhInfo?serviceKey=${SKY_API_KEY}&solYear=${year}&solMonth=${month}&solDay=${day}`
         );
@@ -103,7 +91,54 @@ const MiniCalendar: React.FC = () => {
 
     fetchMoonPhase();
 
-    // 천체 이벤트는 API 호출로 구현 예정
+    // 천체 이벤트 가져오기
+    const fetchCelestialEvents = async () => {
+      try {
+        const response = await fetch(
+          `https://apis.data.go.kr/B090041/openapi/service/AstroEventInfoService/getAstroEventInfo?serviceKey=${SKY_API_KEY}&solYear=${year}&solMonth=${month}&numOfRows=100`
+        );
+
+        const xmlText = await response.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+        // 에러 체크
+        const errorMsg = xmlDoc.querySelector("errMsg")?.textContent;
+        if (errorMsg) {
+          console.error("API Error:", errorMsg);
+          return;
+        }
+
+        const items = xmlDoc.querySelectorAll("item");
+        const todayEvents: CelestialEvent[] = [];
+
+        items.forEach((item) => {
+          const locdate = item.querySelector("locdate")?.textContent?.trim();
+          const eventDate = `${year}${month}${day}`;
+
+          if (locdate === eventDate) {
+            const time = item.querySelector("astroTime")?.textContent || "";
+            const event = item.querySelector("astroEvent")?.textContent || "";
+            const seq = parseInt(item.querySelector("seq")?.textContent || "1");
+
+            todayEvents.push({
+              title: `${time ? `${time} - ` : ""}${event}`,
+              date: eventDate,
+              description: event,
+              seq: seq,
+            });
+          }
+        });
+
+        // seq 순으로 정렬
+        todayEvents.sort((a, b) => (a.seq || 0) - (b.seq || 0));
+        setCelestialEvents(todayEvents);
+      } catch (error) {
+        console.error("Failed to fetch celestial events:", error);
+      }
+    };
+
+    fetchCelestialEvents();
   }, []);
 
   return (
@@ -127,7 +162,7 @@ const MiniCalendar: React.FC = () => {
             <img
               src={moonPhase.imageUrl}
               alt={`Moon phase ${moonPhase.phase}`}
-              className="w-8 h-8 mx-auto mb-2"
+              className="w-32 h-32 mx-auto mb-2"
             />
             <p>단계: {moonPhase.phase}/30</p>
             <p>빛비춤: {moonPhase.illumination}%</p>

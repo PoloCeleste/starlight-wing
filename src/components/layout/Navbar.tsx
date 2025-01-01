@@ -9,7 +9,7 @@ const Navbar: React.FC = () => {
     <nav
       className={`w-full bg-gray-800 transition-all duration-300 ${
         isOpen ? "h-auto" : "h-18"
-      }  min-w-[358px]`}
+      }`}
     >
       <div className="container mx-auto px-6 sm:px-8 lg:px-10">
         <div className="h-18 flex items-center justify-between">
@@ -47,7 +47,10 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 lg:hidden">
-            <AuthButtons />
+            <div className="hidden min-[380px]:block">
+              <AuthButtons />
+            </div>
+
             <button
               className="relative w-6 h-6 ml-4"
               onClick={() => setIsOpen(!isOpen)}
@@ -101,6 +104,9 @@ const Navbar: React.FC = () => {
             <Link to="/mypage" className="text-white hover:text-gray-300">
               혜윰터
             </Link>
+            <div className="min-[380px]:hidden mt-4">
+              <AuthButtons />
+            </div>
           </div>
         </div>
       </div>
