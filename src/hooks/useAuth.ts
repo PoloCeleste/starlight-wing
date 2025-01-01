@@ -17,7 +17,11 @@ const useAuth = () => {
       } else {
         try {
           // 리프레시 토큰을 사용해 새 액세스 토큰 갱신
-          const response = await api.post("/v1/user/refresh", {}, { withCredentials: true });
+          const response = await api.post(
+            "/v1/user/refresh",
+            {},
+            { withCredentials: true }
+          );
           const newAccessToken = response.data.accessToken;
 
           // 새 토큰 저장 후 로그인 상태 업데이트
@@ -29,7 +33,7 @@ const useAuth = () => {
           // 로그인 실패 시 상태 초기화 및 리다이렉트
           authStore.clearAuth();
           setIsLoggedIn(false);
-          navigate("/login");
+          // navigate("/login");
         } finally {
           setIsCheckingAuth(false); // 인증 확인 완료
         }

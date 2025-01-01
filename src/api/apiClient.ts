@@ -47,36 +47,36 @@ api.interceptors.request.use((config) => {
 
 // Response Interceptor: 401 에러 시 Access Token 갱신
 api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true; // 무한 루프 방지
-        try {
-          // Refresh Token을 사용해 Access Token 갱신
-          const response = await api.post("/v1/user/refresh");
-          const newAccessToken = response.data.accessToken;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // 무한 루프 방지
+      try {
+        // Refresh Token을 사용해 Access Token 갱신
+        const response = await api.post("/v1/user/refresh");
+        const newAccessToken = response.data.accessToken;
 
-          // 갱신된 Access Token 저장
-          authStore.setAccessToken(newAccessToken);
+        // 갱신된 Access Token 저장
+        authStore.setAccessToken(newAccessToken);
 
-          // 이전 요청에 새 토큰 추가 후 재시도
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return api(originalRequest);
-        } catch (refreshError) {
-          console.error("토큰 갱신 실패:", refreshError);
+        // 이전 요청에 새 토큰 추가 후 재시도
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        console.error("토큰 갱신 실패:", refreshError);
 
-          // 인증 상태 초기화 및 로그인 페이지로 이동
-          authStore.clearAuth();
-          navigate("/login");
-          return Promise.reject(refreshError);
-        }
+        // 인증 상태 초기화 및 로그인 페이지로 이동
+        authStore.clearAuth();
+        // navigate("/login");
+        return Promise.reject(refreshError);
       }
-
-      // 다른 에러는 그대로 반환
-      return Promise.reject(error);
     }
+
+    // 다른 에러는 그대로 반환
+    return Promise.reject(error);
+  }
 );
 
 export { api, authStore };
