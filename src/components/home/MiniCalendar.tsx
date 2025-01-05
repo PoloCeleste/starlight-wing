@@ -14,26 +14,24 @@ const MiniCalendar: React.FC = () => {
       const parsedEntries: DiaryEntry[] = JSON.parse(entries);
       const today = new Date()
         .toLocaleDateString("ko-KR", {
-          timeZone: "Asia/Seoul",
           year: "numeric",
           month: "2-digit",
           day: "2-digit",
+          timeZone: "Asia/Seoul",
         })
-        .split(". ")
-        .join("-")
-        .replace(".", "");
+        .replace(/\./g, "")
+        .replace(/\s/g, "-");
 
       const todaysDiaries = parsedEntries.filter((entry) => {
         const entryDate = new Date(entry.selectedDate)
           .toLocaleDateString("ko-KR", {
-            timeZone: "Asia/Seoul",
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
+            timeZone: "Asia/Seoul",
           })
-          .split(". ")
-          .join("-")
-          .replace(".", "");
+          .replace(/\./g, "")
+          .replace(/\s/g, "-");
 
         return entryDate === today;
       });
@@ -105,7 +103,7 @@ const MiniCalendar: React.FC = () => {
         // 에러 체크
         const errorMsg = xmlDoc.querySelector("errMsg")?.textContent;
         if (errorMsg) {
-          console.error("API Error:", errorMsg);
+          console.error("API Error(event):", errorMsg);
           return;
         }
 

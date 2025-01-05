@@ -1,3 +1,5 @@
+const { createProxyMiddleware } = require("http-proxy-middleware");
+
 module.exports = {
   siteMetadata: {
     title: `별빛나래`,
@@ -6,4 +8,17 @@ module.exports = {
   },
   graphqlTypegen: true,
   plugins: [`gatsby-plugin-typescript`, `gatsby-plugin-postcss`],
+  developMiddleware: (app) => {
+    // VWorld API 프록시 설정
+    app.use(
+        "/api", // 프록시 경로
+        createProxyMiddleware({
+          target: "https://api.vworld.kr", // VWorld API의 대상 URL
+          changeOrigin: true, // CORS 문제 해결
+          pathRewrite: {
+            "^/api": "", // "/api" 경로를 제거하고 실제 API 경로로 매핑
+          },
+        })
+    );
+  },
 };

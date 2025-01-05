@@ -78,15 +78,17 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
           {existingEntries?.map((entry) => (
             <div key={entry.id} className="mb-2">
               <div className="flex justify-between items-center mr-3">
+                {/* 작성된 날짜와 시간 표시 */}
+
                 <div className="text-sm text-gray-500">
                   {new Date(entry.createdAt).toLocaleString("ko-KR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                    timeZone: "Asia/Seoul",
+                    timeZone: "Asia/Seoul", // 한국 시간으로 변환
                     year: "numeric",
                     month: "2-digit",
                     day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
                   })}
                 </div>
                 <div className="flex-shrink-0">
