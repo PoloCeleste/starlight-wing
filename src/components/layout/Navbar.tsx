@@ -42,6 +42,10 @@ const Navbar: React.FC = () => {
                 혜윰터
                 {/* MyPage ; 생각하는 공간 == 개인의 사색과 휴식을 위한공간 */}
               </Link>
+              <Link to="/map" className="text-white hover:text-gray-300">
+                천문대지도
+                {/* Map ; 사용자위치를 중심으로, 주위 천문대 정보 알려주기 */}
+              </Link>
             </div>
             <AuthButtons />
           </div>
