@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/layout/Layout";
 import DiaryModal from "../components/calendar/DiaryModal";
+import { api } from "../api/apiClient";
 
 const CalendarPage: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>(() => {
-    const saved = localStorage.getItem("diaryEntries");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]); // 초기 상태 빈 배열
+  const [shouldFetch, setShouldFetch] = useState(false);
+
+  const fetchDiaryEntries = async () => {
+    try {
+      const response = await api.get("/diary/diary", { withCredentials: true }); // GET 요청
+      console.log("서버 응답 데이터:", response.data); // 서버 응답 데이터 로그
+      setDiaryEntries(response.data || []); // 상태 업데이트
+    } catch (error) {
+      console.error("다이어리 데이터를 가져오는 중 오류 발생:", error);
+    }
+  };
+
+  // diaryEntries 상태 업데이트 확인
+  useEffect(() => {
+    if (shouldFetch) {
+      fetchDiaryEntries();
+      setShouldFetch(false);
+    }
+  }, [shouldFetch]); // diaryEntries가 변경될 때마다 실행
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -40,6 +57,9 @@ const CalendarPage: React.FC = () => {
       currentDate.getMonth(),
       day
     );
+
+    console.log("클릭한 날짜와 시간:", clickedDate); // 디버깅용
+
     setSelectedDate(clickedDate);
     setIsModalOpen(true);
   };
@@ -61,11 +81,6 @@ const CalendarPage: React.FC = () => {
     );
   };
 
-  // diraryEntries 내역 변경 감지하면 로컬스토리지 갱신. 백엔드 구현 끝나면 그때 그거에 맞게 수정.
-  useEffect(() => {
-    localStorage.setItem("diaryEntries", JSON.stringify(diaryEntries));
-  }, [diaryEntries]);
-
   const isToday = (day: number) => {
     const today = new Date();
     return (
@@ -75,10 +90,11 @@ const CalendarPage: React.FC = () => {
     );
   };
 
-  // 웹 페이지 로딩 시 화면 너비로 모바일인지 아닌지 체크
+  // 모바일 화면 여부 체크
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    fetchDiaryEntries();
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -165,15 +181,13 @@ const CalendarPage: React.FC = () => {
                         day: "2-digit",
                         timeZone: "Asia/Seoul",
                       })
-                      .split(". ")
-                      .join("-")
-                      .replace(".", "") === dateString
+                      .replace(/\./g, "")
+                      .replace(/\s/g, "-") === dateString
                   );
                 } catch (error) {
                   return false;
                 }
               });
-
               // 해당 날짜의 다이어리 엔트리 수 계산
               const entryCount = diaryEntries.filter((entry) => {
                 if (!entry.selectedDate) return false;
@@ -187,9 +201,8 @@ const CalendarPage: React.FC = () => {
                         day: "2-digit",
                         timeZone: "Asia/Seoul",
                       })
-                      .split(". ")
-                      .join("-")
-                      .replace(".", "") === dateString
+                      .replace(/\./g, "")
+                      .replace(/\s/g, "-") === dateString
                   );
                 } catch (error) {
                   return false;
@@ -205,11 +218,11 @@ const CalendarPage: React.FC = () => {
                   key={index + 1}
                   onClick={() => handleDateClick(index + 1)}
                   className={`
-                    aspect-[3/4] md:aspect-[4/3] 
-                    border hover:bg-blue-50 cursor-pointer p-2 
-                    transition-colors relative
-                    ${isToday(index + 1) ? "border-blue-500 border-2" : ""}
-                  `} //오늘 날짜는 파랑 테두리 두르기
+                  aspect-[3/4] md:aspect-[4/3] 
+                  border hover:bg-blue-50 cursor-pointer p-2 
+                  transition-colors relative
+                  ${isToday(index + 1) ? "border-blue-500 border-2" : ""}
+                `} //오늘 날짜는 파랑 테두리 두르기
                   style={
                     isMobile && hasEntry
                       ? {
@@ -222,9 +235,9 @@ const CalendarPage: React.FC = () => {
                     <div className="flex justify-between">
                       <span
                         className={`
-                        text-xs sm:text-sm md:text-base
-                        ${isToday(index + 1) ? "font-bold" : "font-medium"}
-                      `}
+                      text-xs sm:text-sm md:text-base
+                      ${isToday(index + 1) ? "font-bold" : "font-medium"}
+                    `}
                         style={
                           isMobile && hasEntry && brightness === 1
                             ? {
@@ -262,23 +275,52 @@ const CalendarPage: React.FC = () => {
             date={selectedDate}
             existingEntries={diaryEntries.filter((entry) => {
               const entryDate = new Date(entry.selectedDate);
-              const entryDateString = entryDate.toISOString().split("T")[0];
+              const entryDateString = entryDate
+                .toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  timeZone: "Asia/Seoul",
+                })
+                .replace(/\./g, "")
+                .replace(/\s/g, "-");
               const selectedDateString = selectedDate
-                .toISOString()
-                .split("T")[0];
+                .toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  timeZone: "Asia/Seoul",
+                })
+                .replace(/\./g, "")
+                .replace(/\s/g, "-");
               return entryDateString === selectedDateString;
             })}
             onClose={() => setIsModalOpen(false)}
-            onSave={(content) => {
+            onSave={async (content) => {
               const now = new Date();
               const newEntry = {
-                id: Date.now(),
-                selectedDate: selectedDate.toISOString(),
-                createdAt: now.toISOString(),
+                selectedDate: selectedDate
+                  .toLocaleDateString("ko-KR", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    timeZone: "Asia/Seoul",
+                  })
+                  .replace(/\./g, "")
+                  .replace(/\s/g, "-"),
                 content,
               };
-              setDiaryEntries((prevEntries) => [...prevEntries, newEntry]);
-              setIsModalOpen(false);
+              console.log("저장 요청 데이터:", newEntry); // 디버깅용
+              try {
+                // 백엔드 API에 POST 요청
+                const response = await api.post("/diary", newEntry, {
+                  withCredentials: true,
+                });
+                setShouldFetch(true);
+                setIsModalOpen(false);
+              } catch (error) {
+                console.error("다이어리 저장 중 오류 발생:", error);
+              }
             }}
             onUpdate={handleUpdate}
             onDelete={handleDelete}
