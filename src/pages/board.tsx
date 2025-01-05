@@ -4,9 +4,11 @@ import PostList from "../components/board/PostList";
 import SearchBar from "../components/board/SearchBar";
 import { Link } from "gatsby";
 import { api, authStore } from "../api/apiClient";
+import useAuthRefresh from "../hooks/useAuth"; // Custom Hook 사용
 
 const BoardPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [username, setUsername] = useState<string | null>(null); // 사용자 이름 상태
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // 로그인 상태 확인 및 게시글 목록 가져오기
@@ -14,13 +16,26 @@ const BoardPage: React.FC = () => {
     const checkLoginStatus = async () => {
       const token = authStore.getAccessToken();
       setIsLoggedIn(!!token); // 로그인 여부 확인
+      if (token) {
+        try {
+          // 사용자 정보 가져오기
+          const userResponse = await api.post(
+            "/v1/user/refresh",
+            {},
+            { withCredentials: true }
+          );
+          setUsername(userResponse.data.username || "익명");
+        } catch (error) {
+          console.error("사용자 정보 가져오기 실패:", error);
+        }
+      }
     };
 
     const fetchPosts = async () => {
       try {
         const response = await api.get("/posts"); // 백엔드에서 게시글 목록 가져오기
-        console.log(response);
-        setPosts(response.data);
+
+        setPosts(response.data.content || []); // 게시글 목록 설정
       } catch (error) {
         console.error("게시글 목록 불러오기 실패:", error);
       }
