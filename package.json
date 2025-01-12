@@ -16,6 +16,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "cheerio": "^1.0.0",
     "gatsby-plugin-typescript": "^5.14.0",
     "http-proxy-middleware": "^3.0.3",
     "ol": "^10.3.1",

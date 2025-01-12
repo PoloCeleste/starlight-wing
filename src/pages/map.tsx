@@ -20,8 +20,10 @@ const MapComponent: React.FC = () => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
   );
+  const [currentPage, setCurrentPage] = useState(1);
 
   const apiKey = process.env.GATSBY_VWORLD_API_KEY;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const baseLayer = new TileLayer({
@@ -39,10 +41,8 @@ const MapComponent: React.FC = () => {
       }),
     });
     mapInstanceRef.current = map;
-    // 사용자 위치 가져오기
-    fetchUserLocation(map);
 
-    // 천문대 데이터 가져오기
+    fetchUserLocation(map);
     fetchObservatories(map);
   }, []);
 
@@ -54,14 +54,13 @@ const MapComponent: React.FC = () => {
           const coords = fromLonLat([longitude, latitude]);
           setUserLocation([longitude, latitude]);
 
-          // 사용자 위치 마커 추가
           const userMarker = new Feature({
             geometry: new Point(coords),
           });
           userMarker.setStyle(
             new Style({
               image: new Icon({
-                src: "https://cdn-icons-png.flaticon.com/512/3219/3219617.png", // 사용자 아이콘
+                src: "https://cdn-icons-png.flaticon.com/512/609/609803.png",
                 scale: 0.07,
               }),
             })
@@ -74,7 +73,6 @@ const MapComponent: React.FC = () => {
           });
           map.addLayer(vectorLayer);
 
-          // 지도 중심을 사용자 위치로 이동
           map.getView().setCenter(coords);
           map.getView().setZoom(12);
         },
@@ -97,68 +95,29 @@ const MapComponent: React.FC = () => {
 
         const items = response.data.response.result.items;
 
-        console.log(`페이지 ${currentPage} 응답 데이터:`, items);
-
-        if (!items || items.length === 0) break; // 더 이상 데이터가 없으면 종료
+        if (!items || items.length === 0) break;
 
         results.push(...items);
 
         const totalPages = response.data.response.page.total;
-        if (currentPage >= totalPages) break; // 모든 페이지를 가져왔으면 종료
-        currentPage += 1; // 다음 페이지로 이동
+        if (currentPage >= totalPages) break;
+        currentPage += 1;
       } catch (error) {
-        console.error("천문대 데이터 가져오기 실패:", error);
+        console.error("Error fetching observatories:", error);
         break;
       }
     }
 
-    console.log("전체 천문대 데이터:", results);
+    const uniqueResults = results.reduce((acc, poi) => {
+      if (!acc.find((item) => item.title === poi.title)) {
+        acc.push(poi);
+      }
+      return acc;
+    }, []);
 
-    setPoiList(results); // 데이터 저장
-    displayObservatoriesOnMap(results, map); // 지도에 표시
+    setPoiList(uniqueResults);
+    displayObservatoriesOnMap(uniqueResults, map);
   };
-//   const fetchObservatories = async (map: ol.Map) => {
-//     const results = [];
-//     let currentPage = 1;
-  
-//     while (true) {
-//       try {
-//         const response = await axios.get(
-//           `/api/req/search?key=${apiKey}&domain=http://localhost:3000&service=search&request=search&version=2.0&query=천문대&type=PLACE&format=json&page=${currentPage}`
-//         );
-  
-//         const items = response?.data?.response?.result?.items;
-  
-//         console.log(`페이지 ${currentPage} 응답 데이터:`, items);
-  
-//         if (!items || items.length === 0) break; // 더 이상 데이터가 없으면 종료
-  
-//         // 카테고리 기반 필터링
-//         const filteredItems = items.filter((item: any) => {
-//           const category = item.category || "";
-//           return (
-//             category.includes("교육부") || // 중앙행정기관 > 교육부
-//             category.includes("체험관광지") // 테마관광지 > 체험관광지
-//           );
-//         });
-  
-//         results.push(...filteredItems);
-  
-//         const totalPages = response.data.response.page.total;
-//         if (currentPage >= totalPages) break; // 모든 페이지를 가져왔으면 종료
-//         currentPage += 1; // 다음 페이지로 이동
-//       } catch (error) {
-//         console.error("천문대 데이터 가져오기 실패:", error);
-//         break;
-//       }
-//     }
-  
-//     console.log("전체 천문대 데이터:", results);
-  
-//     setPoiList(results); // 필터링된 데이터 저장
-//     displayObservatoriesOnMap(results, map); // 지도에 표시
-//   };
-  
 
   const displayObservatoriesOnMap = (observatories: any[], map: ol.Map) => {
     const features = observatories.map((obs: any) => {
@@ -167,8 +126,6 @@ const MapComponent: React.FC = () => {
           parseFloat(obs.point.x),
           parseFloat(obs.point.y),
         ]);
-        console.log("천문대 좌표:", { title: obs.title, coords });
-
         const feature = new Feature({
           geometry: new Point(coords),
           name: obs.title,
@@ -176,14 +133,14 @@ const MapComponent: React.FC = () => {
         feature.setStyle(
           new Style({
             image: new Icon({
-              src: "https://cdn-icons-png.flaticon.com/512/1828/1828884.png", // 별 모양 아이콘
-              scale: 0.07,
+              src: "https://cdn-icons-png.flaticon.com/512/1828/1828884.png",
+              scale: 0.03,
             }),
           })
         );
         return feature;
       } catch (error) {
-        console.error("좌표 변환 오류:", obs, error);
+        console.error("Error creating feature:", error);
         return null;
       }
     });
@@ -208,8 +165,19 @@ const MapComponent: React.FC = () => {
       parseFloat(poi.point.y),
     ]);
     mapInstanceRef.current.getView().setCenter(coords);
-    mapInstanceRef.current.getView().setZoom(15); // 선택한 천문대 중심 확대
+    mapInstanceRef.current.getView().setZoom(15);
   };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const paginatedList = poiList.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(poiList.length / itemsPerPage);
 
   return (
     <Layout title="천문대">
@@ -225,26 +193,60 @@ const MapComponent: React.FC = () => {
         <div>
           <h3>천문대 목록</h3>
           <ul>
-            {poiList.map((poi, index) => (
+            {paginatedList.map((poi, index) => (
               <li key={index}>
+                <a
+                  href={`https://search.naver.com/search.naver?query=${encodeURIComponent(
+                    poi.title
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    textDecoration: "none",
+                    color: "#007bff",
+                    cursor: "pointer",
+                  }}
+                >
+                  {poi.title}
+                </a>
+                {poi.address.road
+                  ? ` (${poi.address.road})`
+                  : ` (${poi.address.parcel})`}
                 <button
                   onClick={() => handlePoiClick(poi)}
                   style={{
-                    background: "none",
+                    marginLeft: "10px",
+                    backgroundColor: "#f0f0f0",
                     border: "1px solid #ccc",
-                    padding: "5px 10px",
-                    margin: "5px 0",
                     borderRadius: "5px",
+                    padding: "5px 10px",
                     cursor: "pointer",
-                    width: "100%",
-                    textAlign: "left",
                   }}
                 >
-                  {poi.title} ({poi.address.road || poi.address.parcel})
+                  위치 보기
                 </button>
               </li>
             ))}
           </ul>
+          <div style={{ marginTop: "10px" }}>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                style={{
+                  margin: "0 5px",
+                  padding: "5px 10px",
+                  backgroundColor: page === currentPage ? "#007bff" : "#f0f0f0",
+                  color: page === currentPage ? "#fff" : "#000",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </Layout>
