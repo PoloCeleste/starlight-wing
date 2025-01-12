@@ -32,8 +32,11 @@ const authStore = AuthStore.getInstance();
 
 // Axios 인스턴스 생성
 const api = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: process.env.GATSBY_API_URL || "http://3.36.30.27:8080/api",
   withCredentials: true, // 쿠키 전송 허용
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // Request Interceptor: 요청 전 Access Token 추가
@@ -50,12 +53,13 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // 무한 루프 방지
       try {
         // Refresh Token을 사용해 Access Token 갱신
-        const response = await api.post("/v1/user/refresh");
+        const response = await api.post("/v1/user/refresh", null, {
+          withCredentials: true,
+        });
         const newAccessToken = response.data.accessToken;
 
         // 갱신된 Access Token 저장
@@ -69,7 +73,7 @@ api.interceptors.response.use(
 
         // 인증 상태 초기화 및 로그인 페이지로 이동
         authStore.clearAuth();
-        // navigate("/login");
+        navigate("/login");
         return Promise.reject(refreshError);
       }
     }
