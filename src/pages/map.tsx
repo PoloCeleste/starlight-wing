@@ -21,6 +21,7 @@ const MapComponent: React.FC = () => {
     null
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortedPoiList, setSortedPoiList] = useState<any[]>([]);
 
   const apiKey = process.env.GATSBY_VWORLD_API_KEY;
   const itemsPerPage = 10;
@@ -163,7 +164,7 @@ const MapComponent: React.FC = () => {
     setCurrentPage(newPage);
   };
 
-  const paginatedList = poiList.slice(
+  const paginatedList = sortedPoiList.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -237,10 +238,9 @@ const MapComponent: React.FC = () => {
         );
         return distA - distB;
       });
-      setPoiList(sortedPOIs);
-      console.log(poiList);
+      setSortedPoiList(sortedPOIs);
     }
-  }, [poiList]);
+  }, [userLocation, poiList]);
 
   return (
     <Layout title="천문대">

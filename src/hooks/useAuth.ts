@@ -13,7 +13,6 @@ const useAuth = () => {
       if (token) {
         // 토큰이 있으면 로그인 상태 유지
         const decodedToken = JSON.parse(atob(token.split(".")[1]));
-        console.log(decodedToken);
         if (decodedToken.exp * 1000 < Date.now()) {
           const response = await api.post("/v1/user/refresh", null, {
             withCredentials: true,
