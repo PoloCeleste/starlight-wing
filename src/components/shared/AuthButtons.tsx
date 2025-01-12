@@ -31,8 +31,6 @@ const AuthButtons: React.FC = () => {
           }
           const expirationTime = decodedToken.exp * 1000;
           const currentTime = Date.now();
-          console.log(new Date(expirationTime));
-          console.log(new Date(currentTime));
           if (expirationTime - currentTime < 60000) {
             // 1분
             const response = await api.post("/v1/user/refresh", null, {
