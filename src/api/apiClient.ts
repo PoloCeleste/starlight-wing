@@ -32,7 +32,7 @@ const authStore = AuthStore.getInstance();
 
 // Axios 인스턴스 생성
 const api = axios.create({
-  baseURL: process.env.GATSBY_API_URL || "http://3.36.30.27:8080/api",
+  baseURL: process.env.GATSBY_API_URL,
   withCredentials: true, // 쿠키 전송 허용
   headers: {
     "Content-Type": "application/json",
