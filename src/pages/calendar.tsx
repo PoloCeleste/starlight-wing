@@ -14,9 +14,10 @@ const CalendarPage: React.FC = () => {
     try {
       const response = await api.get("/diary/diary", { withCredentials: true }); // GET 요청
       console.log("서버 응답 데이터:", response.data); // 서버 응답 데이터 로그
-      setDiaryEntries(response.data || []); // 상태 업데이트
+      setDiaryEntries(Array.isArray(response.data) ? response.data : []); // 상태 업데이트
     } catch (error) {
       console.error("다이어리 데이터를 가져오는 중 오류 발생:", error);
+      setDiaryEntries([]);
     }
   };
 
@@ -169,25 +170,27 @@ const CalendarPage: React.FC = () => {
               const dateString = `${year}-${month}-${day}`;
 
               // 다이어리 작성 되었는지 확인하는 플래그 생성
-              const hasEntry = diaryEntries.some((entry) => {
-                if (!entry.selectedDate) return false;
-                try {
-                  const entryDate = new Date(entry.selectedDate);
-                  return (
-                    entryDate
-                      .toLocaleDateString("ko-KR", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                        timeZone: "Asia/Seoul",
-                      })
-                      .replace(/\./g, "")
-                      .replace(/\s/g, "-") === dateString
-                  );
-                } catch (error) {
-                  return false;
-                }
-              });
+              const hasEntry = Array.isArray(diaryEntries)
+                ? diaryEntries.some((entry) => {
+                    if (!entry.selectedDate) return false;
+                    try {
+                      const entryDate = new Date(entry.selectedDate);
+                      return (
+                        entryDate
+                          .toLocaleDateString("ko-KR", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            timeZone: "Asia/Seoul",
+                          })
+                          .replace(/\./g, "")
+                          .replace(/\s/g, "-") === dateString
+                      );
+                    } catch (error) {
+                      return false;
+                    }
+                  })
+                : false;
               // 해당 날짜의 다이어리 엔트리 수 계산
               const entryCount = diaryEntries.filter((entry) => {
                 if (!entry.selectedDate) return false;

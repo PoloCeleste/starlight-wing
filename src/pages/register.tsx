@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../components/layout/Layout";
 import { navigate } from "gatsby";
+import { api, authStore } from "../api/apiClient";
 
 interface RegisterFormData {
   username: string;
@@ -63,9 +64,25 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 회원가입 로직 구현
-    // 성공 시 로그인 상태로 홈으로 이동
-    navigate("/");
+
+    try {
+      const response = await api.post("/v1/user/register", {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (response.status === 200) {
+        authStore.setAccessToken(response.data.token);
+        alert("회원가입이 완료되었습니다!");
+        navigate("/");
+      } else {
+        alert(response.data.message || "회원가입에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("회원가입 중 오류 발생:", error);
+      alert("회원가입 처리 중 오류가 발생했습니다.");
+    }
   };
 
   return (

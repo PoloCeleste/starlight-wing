@@ -12,8 +12,14 @@ const useAuth = () => {
 
       if (token) {
         // 토큰이 있으면 로그인 상태 유지
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        if (decodedToken.exp * 1000 < Date.now()) {
+          const response = await api.post("/v1/user/refresh", null, {
+            withCredentials: true,
+          });
+          authStore.setAccessToken(response.data.accessToken);
+        }
         setIsLoggedIn(true);
-        setIsCheckingAuth(false); // 인증 확인 완료
       } else {
         try {
           // 리프레시 토큰을 사용해 새 액세스 토큰 갱신
@@ -22,18 +28,17 @@ const useAuth = () => {
             {},
             { withCredentials: true }
           );
-          const newAccessToken = response.data.accessToken;
-
           // 새 토큰 저장 후 로그인 상태 업데이트
-          authStore.setAccessToken(newAccessToken);
-          setIsLoggedIn(true);
+          if (response.data.accessToken) {
+            authStore.setAccessToken(response.data.accessToken);
+            setIsLoggedIn(true);
+          }
         } catch (error) {
-          console.error("로그인 복구 실패:", error);
-
+          console.error("토큰 갱신 실패:", error);
           // 로그인 실패 시 상태 초기화 및 리다이렉트
           authStore.clearAuth();
           setIsLoggedIn(false);
-          // navigate("/login");
+          navigate("/login");
         } finally {
           setIsCheckingAuth(false); // 인증 확인 완료
         }

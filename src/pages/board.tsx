@@ -19,12 +19,8 @@ const BoardPage: React.FC = () => {
       if (token) {
         try {
           // 사용자 정보 가져오기
-          const userResponse = await api.post(
-            "/v1/user/refresh",
-            {},
-            { withCredentials: true }
-          );
-          setUsername(userResponse.data.username || "익명");
+          const decodedToken = JSON.parse(atob(token.split(".")[1]));
+          setUsername(decodedToken.userNm || "익명");
         } catch (error) {
           console.error("사용자 정보 가져오기 실패:", error);
         }
